@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StatsService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">mutantes</a> &gt; <a href="index.source.html" class="el_package">org.example.service</a> &gt; <span class="el_source">StatsService.java</span></div><h1>StatsService.java</h1><pre class="source lang-java linenums">package org.example.service;
+
+import lombok.RequiredArgsConstructor;
+import org.example.dto.StatsResponse;
+import org.example.repository.DnaRecordRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+<span class="fc" id="L10">@RequiredArgsConstructor</span>
+public class StatsService {
+
+    private final DnaRecordRepository dnaRecordRepository;
+
+    @Transactional(readOnly = true)
+    public StatsResponse getStats() {
+<span class="nc" id="L17">        long mutantCount = dnaRecordRepository.countByIsMutant(true);</span>
+<span class="nc" id="L18">        long humanCount = dnaRecordRepository.countByIsMutant(false);</span>
+<span class="nc" id="L19">        double ratio = 0.0;</span>
+
+        // Manejar división por cero (como se indica en documentacionTest.md)
+<span class="nc bnc" id="L22" title="All 2 branches missed.">        if (humanCount &gt; 0) {</span>
+<span class="nc" id="L23">            ratio = (double) mutantCount / humanCount;</span>
+<span class="nc bnc" id="L24" title="All 2 branches missed.">        } else if (mutantCount &gt; 0) {</span>
+<span class="nc" id="L25">            ratio = mutantCount; // Si hay mutantes pero no humanos, el ratio es N</span>
+        }
+
+        // Redondear a 2 decimales para una respuesta limpia (opcional pero recomendado)
+<span class="nc" id="L29">        ratio = Math.round(ratio * 100.0) / 100.0;</span>
+
+<span class="nc" id="L31">        return new StatsResponse(mutantCount, humanCount, ratio);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

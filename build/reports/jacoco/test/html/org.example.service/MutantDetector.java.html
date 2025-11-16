@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MutantDetector.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">mutantes</a> &gt; <a href="index.source.html" class="el_package">org.example.service</a> &gt; <span class="el_source">MutantDetector.java</span></div><h1>MutantDetector.java</h1><pre class="source lang-java linenums">package org.example.service;
+
+import org.springframework.stereotype.Service;
+import java.util.Set;
+
+@Service
+<span class="fc" id="L7">public class MutantDetector {</span>
+
+    private static final int SEQUENCE_LENGTH = 4; // 4 letras iguales
+    private static final int MIN_SEQUENCES_FOR_MUTANT = 2; // Más de una
+    private static final int MIN_MATRIX_SIZE = 4;
+
+    // Set para validación O(1) de caracteres
+<span class="fc" id="L14">    private static final Set&lt;Character&gt; VALID_BASES = Set.of('A', 'T', 'C', 'G');</span>
+
+    /**
+     * Método público principal.
+     */
+    public boolean isMutant(String[] dna) {
+        // 1. Validación de entrada
+<span class="fc bfc" id="L21" title="All 2 branches covered.">        if (!isValidDnaInput(dna)) {</span>
+<span class="fc" id="L22">            return false;</span>
+        }
+
+<span class="fc" id="L25">        final int N = dna.length;</span>
+<span class="fc" id="L26">        int sequenceCount = 0;</span>
+
+        // 2. Conversión a char[][] (Optimización de acceso)
+<span class="fc" id="L29">        char[][] matrix = dnaToMatrix(dna, N);</span>
+
+        // 3. Single Pass (Optimización de recorrido)
+<span class="fc bfc" id="L32" title="All 2 branches covered.">        for (int row = 0; row &lt; N; row++) {</span>
+<span class="fc bfc" id="L33" title="All 2 branches covered.">            for (int col = 0; col &lt; N; col++) {</span>
+
+                // 4. Boundary Checking (Optimización de límites)
+
+                // Horizontal (→)
+<span class="fc bfc" id="L38" title="All 2 branches covered.">                if (col &lt;= N - SEQUENCE_LENGTH) {</span>
+<span class="fc bfc" id="L39" title="All 2 branches covered.">                    if (checkHorizontal(matrix, row, col)) {</span>
+<span class="fc" id="L40">                        sequenceCount++;</span>
+                    }
+                }
+
+                // Vertical (↓)
+<span class="fc bfc" id="L45" title="All 2 branches covered.">                if (row &lt;= N - SEQUENCE_LENGTH) {</span>
+<span class="fc bfc" id="L46" title="All 2 branches covered.">                    if (checkVertical(matrix, row, col)) {</span>
+<span class="fc" id="L47">                        sequenceCount++;</span>
+                    }
+                }
+
+                // Diagonal (↘)
+<span class="fc bfc" id="L52" title="All 4 branches covered.">                if (row &lt;= N - SEQUENCE_LENGTH &amp;&amp; col &lt;= N - SEQUENCE_LENGTH) {</span>
+<span class="pc bpc" id="L53" title="1 of 2 branches missed.">                    if (checkDiagonal(matrix, row, col)) {</span>
+<span class="nc" id="L54">                        sequenceCount++;</span>
+                    }
+                }
+
+                // Diagonal Inversa (↗)
+<span class="fc bfc" id="L59" title="All 4 branches covered.">                if (row &gt;= SEQUENCE_LENGTH - 1 &amp;&amp; col &lt;= N - SEQUENCE_LENGTH) {</span>
+<span class="pc bpc" id="L60" title="1 of 2 branches missed.">                    if (checkAntiDiagonal(matrix, row, col)) {</span>
+<span class="nc" id="L61">                        sequenceCount++;</span>
+                    }
+                }
+
+                // 5. Early Termination (Optimización CRÍTICA)
+                // Si ya encontramos 2 o más, no seguimos buscando.
+<span class="fc bfc" id="L67" title="All 2 branches covered.">                if (sequenceCount &gt;= MIN_SEQUENCES_FOR_MUTANT) {</span>
+<span class="fc" id="L68">                    return true;</span>
+                }
+            }
+        }
+
+        // Si termina el loop y no llegó a 2, es humano.
+<span class="fc" id="L74">        return false;</span>
+    }
+
+    /**
+     * Validador de la entrada.
+     */
+    private boolean isValidDnaInput(String[] dna) {
+<span class="fc bfc" id="L81" title="All 4 branches covered.">        if (dna == null || dna.length &lt; MIN_MATRIX_SIZE) {</span>
+<span class="fc" id="L82">            return false; // Matriz nula o demasiado pequeña</span>
+        }
+<span class="fc" id="L84">        final int N = dna.length;</span>
+<span class="fc bfc" id="L85" title="All 2 branches covered.">        for (String row : dna) {</span>
+<span class="pc bpc" id="L86" title="1 of 4 branches missed.">            if (row == null || row.length() != N) {</span>
+<span class="fc" id="L87">                return false; // No es NxN</span>
+            }
+<span class="fc bfc" id="L89" title="All 2 branches covered.">            for (char c : row.toCharArray()) {</span>
+<span class="fc bfc" id="L90" title="All 2 branches covered.">                if (!VALID_BASES.contains(c)) {</span>
+<span class="fc" id="L91">                    return false; // Carácter inválido</span>
+                }
+            }
+        }
+<span class="fc" id="L95">        return true;</span>
+    }
+
+    /**
+     * Conversión a char[][] para acceso O(1)
+     */
+    private char[][] dnaToMatrix(String[] dna, int N) {
+<span class="fc" id="L102">        char[][] matrix = new char[N][N];</span>
+<span class="fc bfc" id="L103" title="All 2 branches covered.">        for (int i = 0; i &lt; N; i++) {</span>
+<span class="fc" id="L104">            matrix[i] = dna[i].toCharArray();</span>
+        }
+<span class="fc" id="L106">        return matrix;</span>
+    }
+
+    // -------------------------------------------------
+    // Métodos de chequeo con Comparación Directa
+    // -------------------------------------------------
+
+    private boolean checkHorizontal(char[][] matrix, int row, int col) {
+<span class="fc" id="L114">        final char base = matrix[row][col];</span>
+<span class="fc bfc" id="L115" title="All 6 branches covered.">        return matrix[row][col + 1] == base &amp;&amp;</span>
+                matrix[row][col + 2] == base &amp;&amp;
+                matrix[row][col + 3] == base;
+    }
+
+    private boolean checkVertical(char[][] matrix, int row, int col) {
+<span class="fc" id="L121">        final char base = matrix[row][col];</span>
+<span class="pc bpc" id="L122" title="1 of 6 branches missed.">        return matrix[row + 1][col] == base &amp;&amp;</span>
+                matrix[row + 2][col] == base &amp;&amp;
+                matrix[row + 3][col] == base;
+    }
+
+    private boolean checkDiagonal(char[][] matrix, int row, int col) {
+<span class="fc" id="L128">        final char base = matrix[row][col];</span>
+<span class="pc bpc" id="L129" title="2 of 6 branches missed.">        return matrix[row + 1][col + 1] == base &amp;&amp;</span>
+                matrix[row + 2][col + 2] == base &amp;&amp;
+                matrix[row + 3][col + 3] == base;
+    }
+
+    private boolean checkAntiDiagonal(char[][] matrix, int row, int col) {
+<span class="fc" id="L135">        final char base = matrix[row][col];</span>
+<span class="pc bpc" id="L136" title="5 of 6 branches missed.">        return matrix[row - 1][col + 1] == base &amp;&amp;</span>
+                matrix[row - 2][col + 2] == base &amp;&amp;
+                matrix[row - 3][col + 3] == base;
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>
