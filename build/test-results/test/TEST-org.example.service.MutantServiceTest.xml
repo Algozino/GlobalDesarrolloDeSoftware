@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="org.example.service.MutantServiceTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2025-11-16T19:21:24.535Z" hostname="DESKTOP-S646L8M" time="0.179">
-  <properties/>
-  <testcase name="Debe analizar y GUARDAR si el ADN no está en cache" classname="org.example.service.MutantServiceTest" time="0.177"/>
-  <testcase name="Debe retornar resultado de CACHÉ y NO guardar ni analizar" classname="org.example.service.MutantServiceTest" time="0.001"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>
